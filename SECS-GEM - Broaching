@@ -1,0 +1,227 @@
+Secs gem c++ guide
+
+https://fatalfeel.blogspot.com/2013/09/secsgem-open-source.html
+
+Cross platform Secs/Gem open source
+////////////////////////////////////////////////
+///////////Project Download
+////////////////////////////////////////////////
+http://www.mediafire.com/file/khpjkq4fgssh3yp/GemHsms2018.zip
+
+1.This project can build on VC++ on Win32 and Eclipse CDT on Linux.
+2.Need preinstall ACE Wrappers and Xerces
+3.Memory leak fixed
+4.File secs.xsd grammar fixed
+
+/////////////////////////////////////////////////////////
+///////////Preinstall ACE Wrappers
+/////////////////////////////////////////////////////////
+http://download.dre.vanderbilt.edu/previous_versions
+
+***Windows***
+download ACE-5.6.6.zip
+1.
+notepad C：\ACE_wrappers\ace\config.h
+add
+#include "ace/config-win32.h"
+
+2.
+notepad C:\ACE_wrappers\ace\TTY_IO.h
+add
+bool parityenb; //after int readtimeoutmsec;
+
+3.
+open ACE_wrappers_vc8_Static.sln to build
+
+***Linux***
+download ACE-5.6.6.tar.gz
+1.
+apt-get update
+apt-get install libssl-dev (option)
+
+2.
+gedit /root/.bashrc
+in last line add
+export ACE_ROOT=/root/ACE_wrappers
+then open terminal to run
+
+3.
+gedit /root/ACE_wrappers/configure
+search all iostream.h
+iostream.h
+to
+iostream
+
+//modify function
+int
+main ()
+{
+
+int const ACE_NUM_DESCRIPTORS = 10;
+/*return epoll_create (ACE_NUM_DESCRIPTORS) == -1 ? -1 : 0;
+
+  ;
+  return 0;*/
+  return -1; //by stone
+}
+
+4.
+gedit /root/ACE_wrappers/ace/TTY_IO.h
+add
+bool parityenb; //after int readtimeoutmsec;
+
+5.
+gedit /root/ACE_wrappers/ace/config-linux-common.h
+#define ACE_SCANDIR_CMP_USES_CONST_VOIDPTR
+to
+//#define ACE_SCANDIR_CMP_USES_CONST_VOIDPTR
+
+#define ACE_HAS_EVENT_POLL
+to
+//# define ACE_HAS_EVENT_POLL
+
+6.
+add file /root/ACE_wrappers/ace/config.h
+gedit /root/ACE_wrappers/ace/config.h
+add
+#include "ace/config-linux.h"
+
+7.
+add file /root/ACE_wrappers/include/makeinclude/platform_macros.GNU
+gedit /root/ACE_wrappers/include/makeinclude/platform_macros.GNU
+add
+include /root/ACE_wrappers/include/makeinclude/platform_linux.GNU
+
+8.
+cd /root/ACE_wrappers
+mkdir ace_build
+cd ace_build
+
+9. (options for debug)
+replace all -O2 or -O0 and -O3 to O1 of /root/ACE_wrappers/configure
+
+10.
+//need libssl-dev
+../configure --prefix=/opt/ace
+make
+make install
+
+11.
+have debug info and only ace core (do not use static lib, it does not have dependency info)
+../configure --prefix=/opt/ace --enable-debug=yes --enable-shared=yes --enable-static=no --enable-fl-reactor=no --enable-fox-reactor=no --enable-qos=no --enable-qt-reactor=no --enable-ssl=no --enable-tk-reactor=no --enable-xt-reactor=no --enable-ace-examples=no --enable-ace-tests=no
+
+12.
+make
+make install
+
+13.
+If build on ununtu 12.04 need fxied SSL build errors
+(a)
+add const before SSL_METHOD of configure file and SSL_Context.cpp
+(b)
+change SSLv2 to SSLv3 of SSL_Context.cpp on error line
+
+/////////////////////////////////////////////////////////
+///////////Preinstall Xerces
+/////////////////////////////////////////////////////////
+https://archive.apache.org/dist/xml/xerces-c/source
+
+***Windows***
+download  xerces-c-src_2_7_0.zip
+1.
+open C:\xerces-c-src_2_7_0\Projects\Win32\VC7.1\xerces-all.sln to build
+
+2.
+select [static] version to build
+build project XercesLib
+
+***Linux***
+download xerces-c-src_2_7_0.tar.gz
+1.
+gedit /root/.bashrc
+in last line add
+export XERCESCROOT=/root/xerces-c-src_2_7_0
+then open terminal to run
+
+2.
+cd /root/xerces-c-src_2_7_0/src/xercesc
+
+3. (options for debug)
+replace all -O2 or -O0 of /root/xerces-c-src_2_7_0/src/xercesc/configure
+
+4.
+./configure --prefix=/usr/local/xercesc
+or options for debug
+./configure --prefix=/usr/local/xercesc --enable-debug
+
+5.
+make
+make install
+(then delete export XERCESCROOT=/root/xerces-c-src_2_7_0)
+
+6.
+gedit /root/.bashrc
+in last line add
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/ace/lib:/usr/local/xercesc/lib
+then open terminal to run
+
+Download files:
+1. Source for Win32, Linux, Android copyright by Jesse Stone
+http://www.mediafire.com/file/64ew9ga5mmm6li9/AlphaGemCross.tar.gz
+
+2. Download modified AceWrappers for ubuntu build
+http://www.mediafire.com/file/m8mg5jumu7454al/ACE_wrappers_566.tar.gz
+
+3. Download secs/gem emulator and try
+http://www.mediafire.com/file/89a8q84zw3sa8ee/SECS+Emulator.zip
+this emulator from http://secs.itri.org.tw/about-secs-gem-downloads.html
+
+4. Secs/Gem Android App
+http://www.mediafire.com/file/xowisjyavzviln4/AlphaGemApp.apk
+ 
+//Thanks for Jyugem's resource support
+http://sourceforge.jp/projects/jyugem/releases
+
+
+
+
+
+
+B) Error when build AlphaGemCross on visual 2013
+
+1) error LNK2005: new and delete already defined in LIBCMTD.lib(new.obj)
+
+-> solution:
+refer: https://stackoverflow.com/questions/1146338/error-lnk2005-new-and-delete-already-defined-in-libcmtd-libnew-obj
+
+winmm.lib;version.lib;
+
+
+
+Project -> Properties -> Configuration Properties -> General: Use of MFC = Use MFC in a Shared DLL
+Project -> Properties -> C/C++ -> Code Generation : Runtime Library = Multi-threaded DLL (/MD)
+
+
+C) secs gem 
+https://osdn.net/projects/jyugem/releases/2810
+
+
+ ACE + TAO
+ 
+ https://github.com/DOCGroup/ACE_TAO/releases?page=4
+ 
+ https://github.com/DOCGroup/ACE_TAO/archive/refs/tags/ACE+TAO-6_5_1.zip
+ 
+ 
+ xerces-c-src_2_7_0
+ 
+ 
+ http://archive.apache.org/dist/xml/xerces-c/
+ 
+ 
+ - DTL 
+
+ https://github.com/corwinjoy/database-template-library
+
+use dtl_worked.zip from https://www.codeguru.com/code/legacy/mfc_database/dtl.zip
+refer: https://www.codeguru.com/database/database-template-library/
